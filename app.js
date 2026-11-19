@@ -22,13 +22,14 @@
   }
 
   // ---------- routing ----------
-  const ROUTES = ["home", "changes", "songs", "chords", "progress"];
+  const ROUTES = ["home", "changes", "picking", "songs", "chords", "progress"];
   function route() {
     const r = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
     ROUTES.forEach((x) => ($("view-" + x).hidden = x !== r));
     document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     if (r !== "changes" && drill.phase !== "idle") finish(false);
-    ({ home: renderHome, changes: renderDrill, songs: renderSongs, chords: renderChords, progress: renderProgress })[r]();
+    if (r !== "picking") Picking.stop();
+    ({ home: renderHome, changes: renderDrill, picking: Picking.render, songs: renderSongs, chords: renderChords, progress: renderProgress })[r]();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
