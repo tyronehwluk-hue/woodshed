@@ -9,6 +9,6 @@ A guitar practice site that listens as you play.
 - **Songs:** Spotify-style list with search, showing which songs you can play now and which chord to learn next.
 - **Progress:** daily streak and a 14-day chart of changes per minute.
 
-Coming next: a song library built from your Spotify playlist.
+Songs: Luk's Spotify Guitar playlist, with simplified chords and capo positions (chord names from Ultimate Guitar, no lyrics).
 
 Plain HTML, CSS and JavaScript, no build step. Served with GitHub Pages. Practice history is kept in your browser.

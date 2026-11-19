@@ -41,8 +41,9 @@
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const KNOWN = () => NAMES.filter((n) => CHORDS[n].known);
   function songStatus(s) {
+    if (!s.chords.length) return { missing: [], ready: false, none: true, rank: 99 };
     const missing = s.chords.filter((c) => !KNOWN().includes(c));
-    return { missing, ready: missing.length === 0 };
+    return { missing, ready: missing.length === 0, rank: missing.length };
   }
 
   // ---------- home ----------
@@ -66,8 +67,9 @@
       $("setlist").appendChild(b);
     });
 
-    const ready = SONGS.filter((s) => songStatus(s).ready).slice(0, 8);
-    $("homeSongs").innerHTML = ready.map((s) => `<a class="tile" href="#songs"><span class="cover" style="${coverStyle(s.title)}">${esc(s.title)}</span><span class="tile-t">${esc(s.title)}</span><span class="tile-s">${esc(s.chords.join(" · "))}</span></a>`).join("");
+    const shelf = SONGS.map((s) => ({ s, st: songStatus(s) })).filter(({ st }) => st.rank <= 1)
+      .sort((a, b) => a.st.rank - b.st.rank).slice(0, 8);
+    $("homeSongs").innerHTML = shelf.map(({ s, st }) => `<a class="tile" href="#songs"><span class="cover" style="${coverStyle(s.title)}">${esc(s.title)}</span><span class="tile-t">${esc(s.title)}</span><span class="tile-s">${st.ready ? "Play now" : "Learn " + esc(st.missing[0])}${s.capo ? " · capo " + s.capo : ""}</span></a>`).join("");
   }
 
   // ---------- songs ----------
@@ -86,13 +88,15 @@
     const q = $("songSearch").value.trim().toLowerCase();
     const list = SONGS.map((s) => ({ s, st: songStatus(s) }))
       .filter(({ s }) => !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q) || s.chords.some((c) => c.toLowerCase() === q))
-      .filter(({ st }) => songFilter === "all" || (songFilter === "ready" ? st.ready : st.missing.length === 1))
-      .sort((a, b) => a.st.missing.length - b.st.missing.length);
+      .filter(({ st }) => songFilter === "all" || (songFilter === "ready" ? st.ready : st.rank === 1))
+      .sort((a, b) => a.st.rank - b.st.rank);
     if (!list.length) { $("songList").innerHTML = `<p class="empty">No songs match "${esc(q)}". Try an artist, a title, or a chord like Am.</p>`; return; }
     $("songList").innerHTML = list.map(({ s, st }, i) => {
       const chips = s.chords.map((c) => `<span class="cpill ${st.missing.includes(c) ? "new" : ""}">${esc(c)}</span>`).join("");
-      const label = st.ready ? `<span class="status ready">Play now</span>` : `<span class="status near">Learn ${esc(st.missing.join(", "))}</span>`;
-      return `<div class="track"><span class="track-n">${i + 1}</span><span class="cover" style="${coverStyle(s.title)}">${esc(s.title.split(" ").map((w) => w[0]).join("").slice(0, 3))}</span><span class="track-main"><span class="track-t">${esc(s.title)}</span><span class="track-s">${esc(s.artist)}${s.note ? " · " + esc(s.note) : ""} · ${label}</span></span><span class="track-chords">${chips}</span></div>`;
+      const label = st.none ? `<span class="status none">No chords yet</span>` : st.ready ? `<span class="status ready">Play now</span>` : `<span class="status near">Learn ${esc(st.missing.join(", "))}</span>`;
+      const extra = [s.capo ? `capo ${s.capo}` : s.chords.length ? "no capo" : "", s.partial ? "verse chords" : "", s.note || ""].filter(Boolean).map(esc).join(" · ");
+      const initials = /^[\u3400-\u9fff]/.test(s.title) ? s.title.slice(0, 2) : s.title.split(" ").map((w) => w[0]).join("").slice(0, 3);
+      return `<div class="track${st.none ? " track-dim" : ""}"><span class="track-n">${i + 1}</span><span class="cover" style="${coverStyle(s.title)}">${esc(initials)}</span><span class="track-main"><span class="track-t">${esc(s.title)}</span><span class="track-s">${label} · ${esc(s.artist)}</span>${extra ? `<span class="track-x">${extra}</span>` : ""}</span><span class="track-chords">${chips}</span></div>`;
     }).join("");
   }
   $("songSearch").addEventListener("input", renderSongs);

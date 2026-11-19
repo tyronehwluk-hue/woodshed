@@ -279,3 +279,7 @@ button.lesson:not(.done):hover .lesson-icon { background: linear-gradient(135deg
   .unit-diagram { display: none; }
   .lesson-kind { display: none; }
 }
+.track-x { color: var(--sub); font-size: 12px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.status.none { color: var(--sub); }
+.track-dim .cover { opacity: .45; }
+.track-dim .track-t { color: var(--sub); }
