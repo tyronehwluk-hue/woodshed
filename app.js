@@ -24,7 +24,15 @@
   // ---------- routing ----------
   const ROUTES = ["home", "path", "changes", "picking", "songs", "chords", "progress"];
   function route() {
-    const r = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
+    const h = location.hash.slice(1), songM = /^song-(\d+)$/.exec(h);
+    if (songM && SONGS[+songM[1]]) {
+      ROUTES.forEach((x) => ($("view-" + x).hidden = true)); $("view-song").hidden = false;
+      document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.route === "songs") a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+      if (drill.phase !== "idle") finish(false);
+      Picking.stop(); renderSong(+songM[1]); window.scrollTo(0, 0); return;
+    }
+    $("view-song").hidden = true;
+    const r = ROUTES.includes(h) ? h : "home";
     ROUTES.forEach((x) => ($("view-" + x).hidden = x !== r));
     document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     if (r !== "changes" && drill.phase !== "idle") finish(false);
@@ -67,9 +75,9 @@
       $("setlist").appendChild(b);
     });
 
-    const shelf = SONGS.map((s) => ({ s, st: songStatus(s) })).filter(({ st }) => st.rank <= 1)
+    const shelf = SONGS.map((s, idx) => ({ s, idx, st: songStatus(s) })).filter(({ st }) => st.rank <= 1)
       .sort((a, b) => a.st.rank - b.st.rank).slice(0, 8);
-    $("homeSongs").innerHTML = shelf.map(({ s, st }) => `<a class="tile" href="#songs"><span class="cover" style="${coverStyle(s.title)}">${esc(s.title)}</span><span class="tile-t">${esc(s.title)}</span><span class="tile-s">${st.ready ? "Play now" : "Learn " + esc(st.missing[0])}${s.capo ? " · capo " + s.capo : ""}</span></a>`).join("");
+    $("homeSongs").innerHTML = shelf.map(({ s, idx, st }) => `<a class="tile" href="#song-${idx}"><span class="cover" style="${coverStyle(s.title)}">${esc(s.title)}</span><span class="tile-t">${esc(s.title)}</span><span class="tile-s">${st.ready ? "Play now" : "Learn " + esc(st.missing[0])}${s.capo ? " · capo " + s.capo : ""}</span></a>`).join("");
   }
 
   // ---------- songs ----------
@@ -92,14 +100,55 @@
       .sort((a, b) => a.st.rank - b.st.rank);
     if (!list.length) { $("songList").innerHTML = `<p class="empty">No songs match "${esc(q)}". Try an artist, a title, or a chord like Am.</p>`; return; }
     $("songList").innerHTML = list.map(({ s, st }, i) => {
+      const idx = SONGS.indexOf(s);
       const chips = s.chords.map((c) => `<span class="cpill ${st.missing.includes(c) ? "new" : ""}">${esc(c)}</span>`).join("");
       const label = st.none ? `<span class="status none">No chords yet</span>` : st.ready ? `<span class="status ready">Play now</span>` : `<span class="status near">Learn ${esc(st.missing.join(", "))}</span>`;
       const extra = [s.capo ? `capo ${s.capo}` : s.chords.length ? "no capo" : "", s.partial ? "verse chords" : "", s.note || ""].filter(Boolean).map(esc).join(" · ");
       const initials = /^[\u3400-\u9fff]/.test(s.title) ? s.title.slice(0, 2) : s.title.split(" ").map((w) => w[0]).join("").slice(0, 3);
-      return `<div class="track${st.none ? " track-dim" : ""}"><span class="track-n">${i + 1}</span><span class="cover" style="${coverStyle(s.title)}">${esc(initials)}</span><span class="track-main"><span class="track-t">${esc(s.title)}</span><span class="track-s">${label} · ${esc(s.artist)}</span>${extra ? `<span class="track-x">${extra}</span>` : ""}</span><span class="track-chords">${chips}</span></div>`;
+      return `<a class="track${st.none ? " track-dim" : ""}" href="#song-${idx}"><span class="track-n">${i + 1}</span><span class="cover" style="${coverStyle(s.title)}">${esc(initials)}</span><span class="track-main"><span class="track-t">${esc(s.title)}</span><span class="track-s">${label} · ${esc(s.artist)}</span>${extra ? `<span class="track-x">${extra}</span>` : ""}</span><span class="track-chords">${chips}</span></a>`;
     }).join("");
   }
   $("songSearch").addEventListener("input", renderSongs);
+
+  // ---------- one song ----------
+  function renderSong(i) {
+    Path.sync();
+    const s = SONGS[i], st = songStatus(s), q = encodeURIComponent(s.title + " " + s.artist.split(",")[0]);
+    $("songCover").setAttribute("style", coverStyle(s.title));
+    $("songCover").textContent = s.title;
+    $("songTitle").textContent = s.title;
+    $("songArtist").textContent = s.artist;
+    $("songStatus").innerHTML = st.none ? `<span class="status none">No chords yet</span>` : st.ready ? `<span class="status ready">You can play this now</span>` : `<span class="status near">Learn ${esc(st.missing.join(" and "))} to play this</span>`;
+    const facts = [];
+    if (!st.none) facts.push(s.capo ? `<b>Capo ${s.capo}</b>` : `<b>No capo</b>`);
+    if (s.partial) facts.push("Intro and verse chords only. The chorus may add more.");
+    if (s.note) facts.push(esc(s.note[0].toUpperCase() + s.note.slice(1)) + ".");
+    $("songFacts").innerHTML = facts.map((f) => `<span>${f}</span>`).join("");
+    $("songListen").href = "https://open.spotify.com/search/" + q;
+    $("songSheet").href = "https://www.ultimate-guitar.com/search.php?search_type=title&value=" + q;
+
+    $("songChordsBlock").hidden = st.none;
+    $("songChords").innerHTML = s.chords.map((n) => {
+      const c = CHORDS[n], lab = !c ? "" : c.known ? "You know it" : Path.learning() === n ? "Learning now" : "Not learned yet";
+      return `<div class="libcard"><div class="nm">${esc(n)}</div>${c ? `<span class="st ${c.known ? "" : "new"}">${lab}</span>${chordSVG(n)}` : ""}</div>`;
+    }).join("");
+
+    const pairs = [];
+    for (let k = 0; k < s.chords.length; k++) {
+      const a = s.chords[k], b = s.chords[(k + 1) % s.chords.length];
+      if (a !== b && CHORDS[a] && CHORDS[b] && !pairs.some(([x, y]) => pairName(x, y) === pairName(a, b))) pairs.push([a, b]);
+    }
+    $("songDrillsBlock").hidden = !pairs.length;
+    $("songDrills").innerHTML = "";
+    pairs.forEach(([a, b]) => {
+      const best = drills().filter((d) => pairName(d.a, d.b) === pairName(a, b)).map(pace);
+      const el = document.createElement("button");
+      el.type = "button"; el.className = "row";
+      el.innerHTML = `<span class="row-icon" style="${coverStyle(a + b)}">${esc(a)}·${esc(b)}</span><span class="row-main"><span class="row-title">${esc(a)} to ${esc(b)}</span><span class="row-sub">${best.length ? "Best " + Math.max(...best) + " a minute" : "Not practised yet"}</span></span><span class="row-go">${ICON_PLAY}</span>`;
+      el.addEventListener("click", () => { App.setDrill(a, b, 60); location.hash = "#changes"; });
+      $("songDrills").appendChild(el);
+    });
+  }
 
   // ---------- chord library ----------
   function renderChords() {

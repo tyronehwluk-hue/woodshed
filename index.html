@@ -170,6 +170,32 @@
   <div class="tracklist" id="songList"></div>
 </section>
 
+<!-- ONE SONG -->
+<section class="view" id="view-song" hidden>
+  <a class="back" href="#songs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg>Songs</a>
+  <div class="song-head">
+    <span class="cover song-cover" id="songCover"></span>
+    <div class="song-meta">
+      <h1 id="songTitle"></h1>
+      <p class="song-artist" id="songArtist"></p>
+      <p id="songStatus"></p>
+      <p class="song-facts" id="songFacts"></p>
+      <div class="song-links">
+        <a class="pill pill-primary" id="songListen" target="_blank" rel="noopener">Listen on Spotify</a>
+        <a class="pill pill-ghost" id="songSheet" target="_blank" rel="noopener">Full chord sheet</a>
+      </div>
+    </div>
+  </div>
+  <div class="block" id="songChordsBlock">
+    <div class="block-head"><h2>Chords in this song</h2></div>
+    <div class="chordgrid" id="songChords"></div>
+  </div>
+  <div class="block" id="songDrillsBlock">
+    <div class="block-head"><h2>Practise its changes</h2></div>
+    <div class="rows" id="songDrills"></div>
+  </div>
+</section>
+
 <!-- CHORDS -->
 <section class="view" id="view-chords" hidden>
   <div class="page-head">

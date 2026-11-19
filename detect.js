@@ -9,6 +9,7 @@ window.CHORDS = {
   Am: { frets: [-1, 0, 2, 2, 1, 0],  pcs: [9, 0, 4],  root: 9, known: false, tip: "Same shape as E, moved over one string. Skip the low E." },
   A:  { frets: [-1, 0, 2, 2, 2, 0],  pcs: [9, 1, 4],  root: 9, known: false, tip: "Three fingers in a row on fret 2. Squeeze them in." },
   Dm: { frets: [-1, -1, 0, 2, 3, 1], pcs: [2, 5, 9],  root: 2, known: false, tip: "Like D, but the high E string drops to fret 1." },
+  F:  { frets: [-1, -1, 3, 2, 1, 1], pcs: [5, 9, 0],  root: 5, known: false, tip: "Easy F: index flat across the top two strings at fret 1. Skip the low E and A." },
 };
 
 window.chordSVG = function (name) {
