@@ -4,6 +4,7 @@ A guitar practice site that listens as you play.
 
 - **Chord changes:** pick two chords, strum, and the mic counts each clean change automatically.
 - **Chords:** diagrams and tips for the chords you know and the ones to learn next.
+- **Songs:** Spotify-style list with search, showing which songs you can play now and which chord to learn next.
 - **Progress:** daily streak and a 14-day chart of changes per minute.
 
 Coming next: fingerpicking trainer, and a song library built from your Spotify playlist.

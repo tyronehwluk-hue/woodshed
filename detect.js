@@ -14,7 +14,7 @@ window.CHORDS = {
 window.chordSVG = function (name) {
   const f = CHORDS[name].frets;
   const x0 = 18, dx = 17, y0 = 30, dy = 26, frets = 4, xs = (i) => x0 + i * dx;
-  const ink = "#1a1710";
+  const ink = "currentColor";
   let s = `<svg viewBox="0 0 121 146" role="img" aria-label="${name} chord diagram">`;
   for (let r = 0; r <= frets; r++) s += `<line x1="${x0}" y1="${y0 + r * dy}" x2="${xs(5)}" y2="${y0 + r * dy}" stroke="${ink}" stroke-width="${r === 0 ? 5 : 1.2}"/>`;
   for (let i = 0; i < 6; i++) {

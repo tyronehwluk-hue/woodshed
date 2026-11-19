@@ -22,48 +22,85 @@
   }
 
   // ---------- routing ----------
-  const ROUTES = ["home", "changes", "chords", "progress"];
+  const ROUTES = ["home", "changes", "songs", "chords", "progress"];
   function route() {
     const r = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
     ROUTES.forEach((x) => ($("view-" + x).hidden = x !== r));
-    document.querySelectorAll("nav a").forEach((a) => { if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     if (r !== "changes" && drill.phase !== "idle") finish(false);
-    ({ home: renderHome, changes: renderDrill, chords: renderChords, progress: renderProgress })[r]();
+    ({ home: renderHome, changes: renderDrill, songs: renderSongs, chords: renderChords, progress: renderProgress })[r]();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
 
+  // ---------- shared bits ----------
+  const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+  function hue(str) { let h = 0; for (const ch of str) h = (h * 31 + ch.charCodeAt(0)) % 360; return h; }
+  function coverStyle(str) { const h = hue(str); return `background: linear-gradient(135deg, hsl(${h} 65% 48%), hsl(${(h + 50) % 360} 70% 30%))`; }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const KNOWN = () => NAMES.filter((n) => CHORDS[n].known);
+  function songStatus(s) {
+    const missing = s.chords.filter((c) => !KNOWN().includes(c));
+    return { missing, ready: missing.length === 0 };
+  }
+
   // ---------- home ----------
   function renderHome() {
-    $("todayDate").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+    const h = new Date().getHours();
+    $("greeting").textContent = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
     const all = drills(), weekAgo = Date.now() - 7 * DAY;
     $("homeStreak").textContent = streak();
     $("homeWeek").textContent = all.filter((d) => d.at > weekAgo).reduce((s, d) => s + d.n, 0);
     $("homePace").textContent = all.length ? Math.max(...all.map(pace)) : 0;
 
-    // Suggest: weakest known pair, then one pair bringing in a new chord.
     const bestOf = (a, b) => Math.max(0, ...all.filter((d) => pairName(d.a, d.b) === pairName(a, b)).map(pace));
     const knownPairs = [["G", "C"], ["C", "D"], ["G", "D"], ["E", "D"], ["G", "E"], ["C", "E"]];
     knownPairs.sort((x, y) => bestOf(...x) - bestOf(...y));
     const newPairs = [["E", "Em"], ["C", "Am"], ["D", "A"], ["D", "Dm"]];
     const nextNew = newPairs.find((p) => bestOf(...p) < 20) || newPairs[0];
     const items = [
-      { what: "Warm up: strum each chord you know 4 times, slowly", link: "#chords", label: "Chords" },
-      { what: `Changes: ${knownPairs[0][0]} ↔ ${knownPairs[0][1]}, 60 sec (your slowest pair)`, pair: knownPairs[0] },
-      { what: `Changes: ${knownPairs[1][0]} ↔ ${knownPairs[1][1]}, 60 sec`, pair: knownPairs[1] },
-      { what: `New chord: ${nextNew[0]} ↔ ${nextNew[1]}, 60 sec`, pair: nextNew },
+      { t: `${knownPairs[0][0]} to ${knownPairs[0][1]}`, s: "Chord changes · 60 sec · your slowest pair", pair: knownPairs[0] },
+      { t: `${knownPairs[1][0]} to ${knownPairs[1][1]}`, s: "Chord changes · 60 sec", pair: knownPairs[1] },
+      { t: `${nextNew[0]} to ${nextNew[1]}`, s: `New chord · 60 sec · learn ${nextNew[1]}`, pair: nextNew },
     ];
     $("setlist").innerHTML = "";
-    items.forEach((it, i) => {
-      const li = document.createElement("li");
-      li.innerHTML = `<span class="n">${String(i + 1).padStart(2, "0")}</span><span class="what"></span>`;
-      li.querySelector(".what").textContent = it.what;
+    items.forEach((it) => {
       const a = document.createElement("a");
-      if (it.pair) { a.href = "#changes"; a.textContent = "Go"; a.addEventListener("click", () => { drill.a = it.pair[0]; drill.b = it.pair[1]; drill.secs = 60; savePrefs(); }); }
-      else { a.href = it.link; a.textContent = it.label; }
-      li.appendChild(a); $("setlist").appendChild(li);
+      a.className = "row"; a.href = "#changes";
+      a.innerHTML = `<span class="row-icon" style="${coverStyle(it.t)}">${esc(it.pair[0])}·${esc(it.pair[1])}</span><span class="row-main"><span class="row-title">${esc(it.t)}</span><span class="row-sub">${esc(it.s)}</span></span><span class="row-go">${ICON_PLAY}</span>`;
+      a.addEventListener("click", () => { drill.a = it.pair[0]; drill.b = it.pair[1]; drill.secs = 60; savePrefs(); });
+      $("setlist").appendChild(a);
     });
+
+    const ready = SONGS.filter((s) => songStatus(s).ready).slice(0, 8);
+    $("homeSongs").innerHTML = ready.map((s) => `<a class="tile" href="#songs"><span class="cover" style="${coverStyle(s.title)}">${esc(s.title)}</span><span class="tile-t">${esc(s.title)}</span><span class="tile-s">${esc(s.chords.join(" · "))}</span></a>`).join("");
   }
+
+  // ---------- songs ----------
+  let songFilter = "all";
+  function renderSongs() {
+    const filters = [["all", "All"], ["ready", "Play now"], ["near", "One chord away"]];
+    $("songFilter").innerHTML = "";
+    filters.forEach(([k, label]) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "chip"; b.textContent = label;
+      b.setAttribute("aria-pressed", String(songFilter === k));
+      b.addEventListener("click", () => { songFilter = k; renderSongs(); });
+      $("songFilter").appendChild(b);
+    });
+    const q = $("songSearch").value.trim().toLowerCase();
+    const list = SONGS.map((s) => ({ s, st: songStatus(s) }))
+      .filter(({ s }) => !q || s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q) || s.chords.some((c) => c.toLowerCase() === q))
+      .filter(({ st }) => songFilter === "all" || (songFilter === "ready" ? st.ready : st.missing.length === 1))
+      .sort((a, b) => a.st.missing.length - b.st.missing.length);
+    if (!list.length) { $("songList").innerHTML = `<p class="empty">No songs match "${esc(q)}". Try an artist, a title, or a chord like Am.</p>`; return; }
+    $("songList").innerHTML = list.map(({ s, st }, i) => {
+      const chips = s.chords.map((c) => `<span class="cpill ${st.missing.includes(c) ? "new" : ""}">${esc(c)}</span>`).join("");
+      const label = st.ready ? `<span class="status ready">Play now</span>` : `<span class="status near">Learn ${esc(st.missing.join(", "))}</span>`;
+      return `<div class="track"><span class="track-n">${i + 1}</span><span class="cover" style="${coverStyle(s.title)}">${esc(s.title.split(" ").map((w) => w[0]).join("").slice(0, 3))}</span><span class="track-main"><span class="track-t">${esc(s.title)}</span><span class="track-s">${esc(s.artist)}${s.note ? " · " + esc(s.note) : ""} · ${label}</span></span><span class="track-chords">${chips}</span></div>`;
+    }).join("");
+  }
+  $("songSearch").addEventListener("input", renderSongs);
 
   // ---------- chord library ----------
   function renderChords() {
@@ -95,13 +132,13 @@
       let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Best changes per minute each day">`;
       for (let g = 0; g <= 4; g++) {
         const y = H - B - ((H - B - T) * g) / 4;
-        s += `<line x1="${L}" x2="${W - 4}" y1="${y}" y2="${y}" stroke="#2d2a24"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" font-size="11" font-family="DM Mono, monospace" fill="#a49d8f">${g * step}</text>`;
+        s += `<line x1="${L}" x2="${W - 4}" y1="${y}" y2="${y}" stroke="#2c2c30"/><text x="${L - 6}" y="${y + 4}" text-anchor="end" font-size="11" font-family="DM Mono, monospace" fill="#a7a4a0">${g * step}</text>`;
       }
       days.forEach((d, i) => {
         const h = ((H - B - T) * d.v) / top, x = L + 4 + i * bw;
-        if (d.v) s += `<rect x="${x + 3}" y="${H - B - h}" width="${bw - 6}" height="${h}" fill="${i === 13 ? "#e2412f" : "#c8a457"}" rx="2"/>`;
-        if (d.v) s += `<text x="${x + bw / 2}" y="${H - B - h - 5}" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#efe9dc">${d.v}</text>`;
-        if (i % 2 === 1 || i === 13) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#a49d8f">${i === 13 ? "today" : new Date(d.t).getDate()}</text>`;
+        if (d.v) s += `<rect x="${x + 3}" y="${H - B - h}" width="${bw - 6}" height="${h}" fill="${i === 13 ? "#ff5f7e" : "#ff8a4c"}" rx="6"/>`;
+        if (d.v) s += `<text x="${x + bw / 2}" y="${H - B - h - 5}" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#f4f2ee">${d.v}</text>`;
+        if (i % 2 === 1 || i === 13) s += `<text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="11" font-family="DM Mono, monospace" fill="#a7a4a0">${i === 13 ? "today" : new Date(d.t).getDate()}</text>`;
       });
       $("chart").innerHTML = s + `</svg>`;
     }

@@ -4,150 +4,154 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Woodshed</title>
-<meta name="description" content="A guitar practice site: chord changes counted by your mic, chord library and progress.">
+<meta name="description" content="Guitar practice that listens: chord changes counted by your mic, songs you can play, and your progress.">
+<meta name="theme-color" content="#121212">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=Work+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="top">
-  <div class="top-inner">
-    <a class="brand" href="#home"><span class="jewel" aria-hidden="true"></span>WOODSHED</a>
-    <nav aria-label="Main">
-      <a href="#home" data-route="home">Home</a>
-      <a href="#changes" data-route="changes">Chord changes</a>
-      <a href="#chords" data-route="chords">Chords</a>
-      <a href="#progress" data-route="progress">Progress</a>
-    </nav>
-  </div>
-</header>
+<div class="shell">
+
+<aside class="side">
+  <a class="brand" href="#home"><span class="logo" aria-hidden="true"></span>Woodshed</a>
+  <nav class="nav" aria-label="Main">
+    <a href="#home" data-route="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+    <a href="#changes" data-route="changes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7zm1 2v6l4 2.5-.9 1.6L11 12V5z"/></svg><span>Practice</span></a>
+    <a href="#songs" data-route="songs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18.5a3 3 0 1 1-2-2.83V5l12-2v12.5a3 3 0 1 1-2-2.83V7.4L9 8.8z"/></svg><span>Songs</span></a>
+    <a href="#chords" data-route="chords"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zm2 2v3h10V5zm0 5v2h10v-2zm0 4v2h10v-2zm0 4v1h10v-1z"/></svg><span>Chords</span></a>
+    <a href="#progress" data-route="progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z"/></svg><span>Progress</span></a>
+  </nav>
+</aside>
 
 <main id="app">
 
 <!-- HOME -->
 <section class="view" id="view-home" hidden>
+  <p class="eyebrow" id="greeting">Good afternoon</p>
   <div class="hero">
-    <p class="kicker">Practice log · <span id="todayDate"></span></p>
-    <h1>Play. It listens.<br>You get better.</h1>
-    <p class="lede">Strum, switch chords, and the mic counts every clean change for you. No tapping, no honour system.</p>
-    <a class="btn btn-hot" href="#changes">Start a drill</a>
+    <div class="hero-text">
+      <h1>Play. It listens.</h1>
+      <p>Strum and switch chords. The mic counts every clean change for you.</p>
+    </div>
+    <a class="pill pill-primary" href="#changes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Start practising</a>
   </div>
 
-  <div class="panel-row">
-    <div class="dial">
-      <div class="dial-label">Streak</div>
-      <div class="dial-num" id="homeStreak">0</div>
-      <div class="dial-unit">days</div>
-    </div>
-    <div class="dial">
-      <div class="dial-label">This week</div>
-      <div class="dial-num" id="homeWeek">0</div>
-      <div class="dial-unit">changes</div>
-    </div>
-    <div class="dial">
-      <div class="dial-label">Best pace</div>
-      <div class="dial-num" id="homePace">0</div>
-      <div class="dial-unit">per min</div>
-    </div>
+  <div class="stats">
+    <div class="stat"><span class="stat-n" id="homeStreak">0</span><span class="stat-l">day streak</span></div>
+    <div class="stat"><span class="stat-n" id="homeWeek">0</span><span class="stat-l">changes this week</span></div>
+    <div class="stat"><span class="stat-n" id="homePace">0</span><span class="stat-l">best per minute</span></div>
   </div>
 
-  <div class="todo">
-    <h2>Today's set</h2>
-    <ol class="setlist" id="setlist"></ol>
+  <div class="block">
+    <div class="block-head"><h2>Today's practice</h2></div>
+    <div class="rows" id="setlist"></div>
   </div>
 
-  <div class="coming">
-    <div class="coming-card">
-      <span class="tag">Next up</span>
-      <h3>Fingerpicking</h3>
-      <p>Simple thumb-and-finger patterns over chords you know, with a metronome that speeds up when you're on time.</p>
-    </div>
-    <div class="coming-card">
-      <span class="tag">Next up</span>
-      <h3>Your songs</h3>
-      <p>Songs from your own Spotify playlist, sorted by which ones you can play with the chords you know.</p>
+  <div class="block">
+    <div class="block-head"><h2>Songs you can play</h2><a class="more" href="#songs">Show all</a></div>
+    <div class="shelf" id="homeSongs"></div>
+  </div>
+
+  <div class="block">
+    <div class="block-head"><h2>Coming soon</h2></div>
+    <div class="soon">
+      <div class="soon-card soon-a"><h3>Fingerpicking</h3><p>Patterns over chords you know, with a metronome that speeds up when you're on time.</p></div>
+      <div class="soon-card soon-b"><h3>Your playlist</h3><p>Your own Spotify songs, sorted by which ones you can play right now.</p></div>
     </div>
   </div>
 </section>
 
-<!-- CHORD CHANGES -->
+<!-- PRACTICE: CHORD CHANGES -->
 <section class="view" id="view-changes" hidden>
-  <div class="drill">
-    <div class="drill-head">
-      <h1 class="page-title">Chord changes</h1>
-      <p class="sub">Strum the lit chord. When the mic hears it cleanly, it counts and lights the other one.</p>
-    </div>
-
-    <div class="amp">
-      <div class="pair">
-        <div class="chordcard" id="cardA"></div>
-        <div class="arrow" aria-hidden="true">↔</div>
-        <div class="chordcard" id="cardB"></div>
-      </div>
-
-      <div class="readout">
-        <div class="ro"><span class="ro-l">Time</span><span class="ro-n" id="time">60</span></div>
-        <div class="ro ro-main"><span class="ro-l">Clean changes</span><span class="ro-n" id="count">0</span></div>
-        <div class="ro"><span class="ro-l">Best</span><span class="ro-n" id="best">–</span></div>
-      </div>
-
-      <div class="vu" aria-hidden="true"><div class="vu-fill" id="vu"></div><div class="vu-mark" id="vuMark"></div></div>
-      <div class="heard" id="heard" role="status" aria-live="polite">Press Start, then give the mic two seconds of quiet.</div>
-
-      <button class="btn btn-hot btn-big" id="start" type="button">Start</button>
-    </div>
-
-    <div class="knobs">
-      <div class="knob-group">
-        <div class="knob-l">Chord 1</div>
-        <div class="chips" id="pickA"></div>
-      </div>
-      <div class="knob-group">
-        <div class="knob-l">Chord 2</div>
-        <div class="chips" id="pickB"></div>
-      </div>
-      <div class="knob-group">
-        <div class="knob-l">Length</div>
-        <div class="chips" id="pickTime"></div>
-      </div>
-    </div>
-
-    <details class="tips">
-      <summary>Getting accurate counts</summary>
-      <ul>
-        <li>Use Chrome or Safari, allow the microphone, and put your phone or laptop about a metre from the guitar.</li>
-        <li>Strum all the strings of the chord once and let it ring for half a second before switching.</li>
-        <li>A change only counts when the new chord sounds right. If a string is muted or buzzing, the page tells you what it heard instead.</li>
-        <li>Tune up first. A badly out-of-tune guitar can confuse it.</li>
-      </ul>
-    </details>
+  <div class="page-head">
+    <h1>Chord changes</h1>
+    <p>Strum the highlighted chord. When the mic hears it cleanly, it counts and moves to the other one.</p>
   </div>
+
+  <div class="stage">
+    <div class="pair">
+      <div class="chordcard" id="cardA"></div>
+      <div class="swap" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3 1.4-1.4L22 8l-5.6 5.4L15 12l3-3H7zm10 10H6l3 3-1.4 1.4L2 16l5.6-5.4L9 12l-3 3h11z"/></svg></div>
+      <div class="chordcard" id="cardB"></div>
+    </div>
+
+    <div class="readout">
+      <div class="ro"><span class="ro-n" id="time">60</span><span class="ro-l">seconds</span></div>
+      <div class="ro ro-main"><span class="ro-n" id="count">0</span><span class="ro-l">clean changes</span></div>
+      <div class="ro"><span class="ro-n" id="best">–</span><span class="ro-l">your best</span></div>
+    </div>
+
+    <div class="vu" aria-hidden="true"><div class="vu-fill" id="vu"></div><div class="vu-mark" id="vuMark"></div></div>
+    <p class="heard" id="heard" role="status" aria-live="polite">Press Start, then give the mic two seconds of quiet.</p>
+
+    <button class="pill pill-primary pill-wide" id="start" type="button">Start</button>
+  </div>
+
+  <div class="settings">
+    <div class="setting"><span class="setting-l">First chord</span><div class="chips" id="pickA"></div></div>
+    <div class="setting"><span class="setting-l">Second chord</span><div class="chips" id="pickB"></div></div>
+    <div class="setting"><span class="setting-l">Length</span><div class="chips" id="pickTime"></div></div>
+  </div>
+
+  <details class="tips">
+    <summary>Tips for accurate counting</summary>
+    <ul>
+      <li>Allow the microphone and keep your phone or laptop about a metre from the guitar.</li>
+      <li>Strum the whole chord once and let it ring for half a second before switching.</li>
+      <li>A change only counts when the new chord sounds right. If a string is muted or buzzing, you'll see what the mic heard instead.</li>
+      <li>Tune up first. An out-of-tune guitar can confuse it.</li>
+    </ul>
+  </details>
+</section>
+
+<!-- SONGS -->
+<section class="view" id="view-songs" hidden>
+  <div class="page-head">
+    <h1>Songs</h1>
+    <p>Starter songs for now. Your own Spotify playlist will take over this list later.</p>
+  </div>
+  <label class="search" for="songSearch">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg>
+    <input id="songSearch" type="search" placeholder="Search songs, artists or chords" autocomplete="off">
+  </label>
+  <div class="chips filter" id="songFilter"></div>
+  <div class="tracklist" id="songList"></div>
 </section>
 
 <!-- CHORDS -->
 <section class="view" id="view-chords" hidden>
-  <h1 class="page-title">Chords</h1>
-  <p class="sub">The ones you know, and the four to learn next. × means don't play that string, ○ means play it open.</p>
+  <div class="page-head">
+    <h1>Chords</h1>
+    <p>The ones you know and the four to learn next. × means don't play that string, ○ means play it open.</p>
+  </div>
   <div class="chordgrid" id="chordGrid"></div>
 </section>
 
 <!-- PROGRESS -->
 <section class="view" id="view-progress" hidden>
-  <h1 class="page-title">Progress</h1>
-  <p class="sub">Clean changes per minute, best drill each day, last 14 days.</p>
+  <div class="page-head">
+    <h1>Progress</h1>
+    <p>Clean changes per minute, your best drill each day, over the last 14 days.</p>
+  </div>
   <div class="chartbox" id="chart"></div>
-  <h2>Best by chord pair</h2>
-  <div id="pairTable"></div>
-  <button class="btn btn-ghost" id="resetBtn" type="button">Clear my history</button>
-  <p class="confirm" id="resetConfirm" hidden>Delete all drills? <button class="btn btn-ghost" id="resetYes" type="button">Yes, delete</button> <button class="btn btn-ghost" id="resetNo" type="button">Keep</button></p>
+  <div class="block">
+    <div class="block-head"><h2>Best by chord pair</h2></div>
+    <div id="pairTable"></div>
+  </div>
+  <div class="danger">
+    <button class="pill pill-ghost" id="resetBtn" type="button">Clear my history</button>
+    <p class="confirm" id="resetConfirm" hidden>Delete all your drills? <button class="pill pill-ghost" id="resetYes" type="button">Yes, delete</button><button class="pill pill-ghost" id="resetNo" type="button">Keep them</button></p>
+  </div>
 </section>
 
+<p class="foot">Your practice history stays in this browser.</p>
 </main>
-
-<footer class="foot"><div class="top-inner">Your practice history stays in this browser.</div></footer>
+</div>
 
 <script src="detect.js"></script>
+<script src="songs.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
