@@ -24,3 +24,42 @@ window.SONGS = [
   { title: "In The Stars", artist: "Benson Boone", chords: [], note: "chord page couldn't be read" },
   { title: "Imagination", artist: "Shawn Mendes", chords: ["Em", "C", "G", "D"], capo: 5, note: "main loop; the bridge adds harder chords" },
 ];
+
+// ---------- full charts for play-along ----------
+// Each chart is typed from a chord sheet (chord names only), then simplified to open
+// shapes and moved by `shift` semitones into the key of the shapes above.
+(function () {
+  const NAMES = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+  const PC = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  function simple(ch, shift) {
+    const m = /^([A-G])([#b]?)(m(?!aj))?/.exec(ch);
+    if (!m) return ch;
+    const pc = (PC[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0) + shift + 24) % 12;
+    return NAMES[pc] + (m[3] ? "m" : "");
+  }
+  window.makeChart = function (opts) {
+    const shift = opts.shift || 0;
+    return {
+      bpm: opts.bpm, beats: opts.beats || 4, src: opts.src,
+      sections: opts.sections.map(([name, text]) => ({
+        name,
+        lines: text.split("|").map((l) => l.trim().split(/\s+/).filter((c) => c && c !== "%").map((c) => simple(c, shift)).join(" ")).filter(Boolean),
+      })),
+    };
+  };
+  const by = (t) => SONGS.find((s) => s.title === t);
+  const add = (t, opts) => { const s = by(t); if (s) { s.chart = makeChart(opts); s.partial = false; } };
+
+  add("Perfect", { bpm: 63, src: "Chordify / Guitartwitt", sections: [
+    ["Intro", "G"],
+    ["Verse 1", "G Em | C D | G Em | C D"],
+    ["Pre-chorus", "G | Em C G D | G Em | C D"],
+    ["Chorus", "Em C G D Em | C G D Em | C G D Em | C G D G | G D/F# Em D | C D"],
+    ["Verse 2", "G Em | C D | G Em | C D"],
+    ["Pre-chorus", "G Em | C G D | G Em | C D"],
+    ["Chorus", "Em C G D Em | C G D Em | C G D | Em C G D G"],
+    ["Interlude", "G G Em Em | C C D D"],
+    ["Chorus", "Em C G D Em | C G D Em | C G D Em | C G D"],
+    ["Outro", "G/B C | Dsus4 D G | G D/F# Em D | C D | G"],
+  ] });
+})();

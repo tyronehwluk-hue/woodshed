@@ -186,6 +186,24 @@
       </div>
     </div>
   </div>
+  <div class="block player" id="playBlock" hidden>
+    <div class="block-head"><h2>Play along</h2><span class="pl-sec-now" id="playSec"></span></div>
+    <div class="pl-stage">
+      <div class="pl-now chordcard lit" id="playNow"></div>
+      <div class="pl-next" id="playNext"></div>
+    </div>
+    <div class="pl-progress"><div id="playBar"></div></div>
+    <div class="pl-controls">
+      <button class="pill pill-primary" id="playBtn" type="button">Play</button>
+      <button class="pill pill-ghost" id="playRestart" type="button">From the top</button>
+      <div class="pl-tempo"><button class="chip" id="playSlower" type="button" aria-label="Slower">−</button><span><b id="playBpm">80</b> bpm</span><button class="chip" id="playFaster" type="button" aria-label="Faster">+</button></div>
+      <button class="chip" id="playSound" type="button">Guitar sound</button>
+      <button class="chip" id="playClick" type="button">Click</button>
+    </div>
+    <div class="pl-chart" id="playChart"></div>
+    <p class="hint" id="playNote"></p>
+  </div>
+
   <div class="block" id="songChordsBlock">
     <div class="block-head"><h2>Chords in this song</h2></div>
     <div class="chordgrid" id="songChords"></div>
@@ -229,6 +247,7 @@
 <script src="detect.js"></script>
 <script src="songs.js"></script>
 <script src="picking.js"></script>
+<script src="player.js"></script>
 <script src="path.js"></script>
 <script src="app.js"></script>
 </body>

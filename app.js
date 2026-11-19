@@ -31,6 +31,7 @@
       if (drill.phase !== "idle") finish(false);
       Picking.stop(); renderSong(+songM[1]); window.scrollTo(0, 0); return;
     }
+    Player.stop();
     $("view-song").hidden = true;
     const r = ROUTES.includes(h) ? h : "home";
     ROUTES.forEach((x) => ($("view-" + x).hidden = x !== r));
@@ -126,6 +127,7 @@
     $("songFacts").innerHTML = facts.map((f) => `<span>${f}</span>`).join("");
     $("songListen").href = "https://open.spotify.com/search/" + q;
     $("songSheet").href = "https://www.ultimate-guitar.com/search.php?search_type=title&value=" + q;
+    Player.render(s);
 
     $("songChordsBlock").hidden = st.none;
     $("songChords").innerHTML = s.chords.map((n) => {

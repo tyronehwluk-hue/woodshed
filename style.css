@@ -300,3 +300,32 @@ a.track { color: inherit; text-decoration: none; cursor: pointer; }
   .song-head { flex-direction: column; align-items: flex-start; gap: 16px; }
   .song-cover { width: 150px; }
 }
+/* play-along */
+.player { background: var(--panel); border-radius: var(--r-lg); padding: 20px; }
+.pl-sec-now { color: var(--accent); font-weight: 700; font-size: 14px; }
+.pl-stage { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; margin: 12px 0; align-items: stretch; }
+.pl-now { opacity: 1; padding: 16px 8px 12px; }
+.pl-now .nm { font-size: 44px; }
+.pl-now svg { max-width: 130px; color: #1d1410; }
+.pl-next { background: var(--panel-2); border-radius: var(--r-md); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 8px; color: var(--sub); }
+.pl-next .nm { font-weight: 800; font-size: 28px; color: var(--text); }
+.pl-next svg { width: 100%; max-width: 86px; height: auto; color: var(--sub); }
+.pl-l { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.pl-progress { height: 4px; background: var(--panel-3); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+.pl-progress div { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .3s; }
+.pl-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
+.pl-controls .pill svg { width: 16px; height: 16px; fill: currentColor; }
+.pl-tempo { display: flex; align-items: center; gap: 8px; color: var(--sub); font-size: 14px; }
+.pl-tempo b { color: var(--text); font-family: var(--mono); }
+.pl-tempo .chip { min-width: 36px; justify-content: center; }
+.pl-chart { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding-right: 4px; scrollbar-width: thin; }
+.pl-sec-n { font-size: 12px; font-weight: 700; color: var(--sub); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+.pl-line { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.pl-ch { font: 600 14px var(--mono); color: var(--text); background: var(--panel-2); border: 0; border-radius: 999px; padding: 6px 12px; cursor: pointer; transition: background .15s, color .15s, transform .15s; }
+.pl-ch:hover { background: var(--panel-3); }
+.pl-ch.past { color: var(--sub); }
+.pl-ch.on { background: var(--accent); color: #1d1410; transform: scale(1.08); }
+@media (max-width: 760px) {
+  .player { padding: 16px; margin-left: -4px; margin-right: -4px; }
+  .pl-now .nm { font-size: 36px; }
+}
