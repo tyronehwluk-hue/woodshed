@@ -18,10 +18,10 @@
   <a class="brand" href="#home"><span class="logo" aria-hidden="true"></span>Woodshed</a>
   <nav class="nav" aria-label="Main">
     <a href="#home" data-route="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a>
+    <a href="#path" data-route="path"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3a3 3 0 0 1 1 5.83V11h6a3 3 0 0 1 3 3v1.17A3 3 0 1 1 14 18a3 3 0 0 1 0-.17V14a1 1 0 0 0-1-1H7v2.17A3 3 0 1 1 5 15.17V8.83A3 3 0 0 1 6 3z"/></svg><span>Path</span></a>
     <a href="#changes" data-route="changes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7zm1 2v6l4 2.5-.9 1.6L11 12V5z"/></svg><span>Practice</span></a>
     <a href="#picking" data-route="picking"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c3.9 0 7 1.6 7 4.3 0 3.4-3.6 9.3-5.6 13.3a1.6 1.6 0 0 1-2.8 0C8.6 15.6 5 9.7 5 6.3 5 3.6 8.1 2 12 2z"/></svg><span>Picking</span></a>
     <a href="#songs" data-route="songs"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18.5a3 3 0 1 1-2-2.83V5l12-2v12.5a3 3 0 1 1-2-2.83V7.4L9 8.8z"/></svg><span>Songs</span></a>
-    <a href="#chords" data-route="chords"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zm2 2v3h10V5zm0 5v2h10v-2zm0 4v2h10v-2zm0 4v1h10v-1z"/></svg><span>Chords</span></a>
     <a href="#progress" data-route="progress"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10h3v10zm6.5 0V4h3v16zM17 20v-7h3v7z"/></svg><span>Progress</span></a>
   </nav>
 </aside>
@@ -64,6 +64,20 @@
   </div>
 </section>
 
+<!-- PATH -->
+<section class="view" id="view-path" hidden>
+  <div class="page-head">
+    <h1>Your path</h1>
+    <p>One new chord per unit. Lessons tick off by themselves when you hit the goal in a drill or picking session.</p>
+  </div>
+  <div class="path-summary">
+    <div class="path-progress"><span id="pathCount">0 lessons done</span><div class="bar"><div id="pathBar"></div></div></div>
+    <div class="path-known"><span class="setting-l">Chords you know</span><div class="known-chips" id="pathKnown"></div></div>
+    <a class="more" href="#chords">See all chord diagrams</a>
+  </div>
+  <div class="units" id="pathUnits"></div>
+</section>
+
 <!-- PRACTICE: CHORD CHANGES -->
 <section class="view" id="view-changes" hidden>
   <div class="page-head">
@@ -71,6 +85,7 @@
     <p>Strum the highlighted chord. When the mic hears it cleanly, it counts and moves to the other one.</p>
   </div>
 
+  <div class="lesson-banner" id="lessonChanges" hidden></div>
   <div class="stage">
     <div class="pair">
       <div class="chordcard" id="cardA"></div>
@@ -114,6 +129,7 @@
     <p>Pick each lit note. The mic checks the string you played. <b>p</b> is your thumb, <b>i</b> index, <b>m</b> middle, <b>a</b> ring finger.</p>
   </div>
 
+  <div class="lesson-banner" id="lessonPicking" hidden></div>
   <div class="stage stage-wide">
     <div class="pk-top">
       <div class="pk-chord" id="pkChord"></div>
@@ -187,6 +203,7 @@
 <script src="detect.js"></script>
 <script src="songs.js"></script>
 <script src="picking.js"></script>
+<script src="path.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

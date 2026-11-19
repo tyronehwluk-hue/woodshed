@@ -144,7 +144,22 @@ window.Picking = (function () {
 
   function advance() {
     st.pos++;
-    if (st.pos >= st.steps.length) { st.pos = 0; st.steps.forEach((x) => (x.state = "")); }
+    if (st.pos >= st.steps.length) {
+      st.pos = 0; st.steps.forEach((x) => (x.state = ""));
+      st.loops++; record();
+      heard(`Loop ${st.loops} done. Keep going.`, "ok");
+    }
+  }
+  // Save this session's result so the learning path can tick off lessons.
+  function record() {
+    try {
+      const all = JSON.parse(localStorage.getItem("fw-picks") || "[]");
+      const rec = { at: st.sessionAt, pattern: st.pattern, chords: st.chords.slice(), mode: st.mode, loops: st.loops, bestBpm: st.sessionBest || 0 };
+      const i = all.findIndex((r) => r.at === st.sessionAt);
+      if (i >= 0) all[i] = rec; else all.push(rec);
+      localStorage.setItem("fw-picks", JSON.stringify(all.slice(-300)));
+    } catch (e) {}
+    if (window.Path) Path.check();
   }
 
   function tick() {
@@ -196,6 +211,8 @@ window.Picking = (function () {
     st.loopHits = 0; st.loopJudged = 0;
     const best = Math.max(st.bestBpm || 0, acc >= 0.85 ? st.bpm - 5 : 0);
     st.bestBpm = best; save();
+    if (acc >= 0.85) { st.sessionBest = Math.max(st.sessionBest || 0, st.bpm - (changed ? 5 : 0)); }
+    record();
     if (changed) {
       // Restart the clock at the loop boundary with the new tempo.
       st.t0 = boundary; st.nextClick = boundary; st.lastJudged = -1; st.pos = -1;
@@ -206,6 +223,7 @@ window.Picking = (function () {
 
   async function start() {
     st.steps = build(); st.pos = 0; st.hits = 0; st.judged = 0; st.loopHits = 0; st.loopJudged = 0; st.lastJudged = -1;
+    st.loops = 0; st.sessionBest = 0; st.sessionAt = Date.now();
     heard("Asking for your microphone…");
     try { await startMic(); } catch (e) { heard("I couldn't use your microphone. Allow mic access for this site in your browser settings, then press Start again.", "bad"); return; }
     st.running = true;
@@ -240,6 +258,7 @@ window.Picking = (function () {
   }
   function render() {
     if (!st.running) st.steps = build();
+    if (window.Path) Path.banner($("lessonPicking"), "picking", { pattern: st.pattern, chords: st.chords, mode: st.mode });
     const steps = st.steps, cur = steps[Math.max(0, st.pos)] || steps[0];
     $("pkChord").innerHTML = `<span class="pk-chord-l">Hold</span><span class="pk-chord-n">${cur.chord}</span>`;
     $("pkFinger").textContent = cur.finger;
@@ -276,5 +295,9 @@ window.Picking = (function () {
   }
 
   $("pkStart").addEventListener("click", () => (st.running ? stop() : start()));
-  return { render, stop, _st: st, _build: build };
+  function setup(pattern, chords, mode, bpm) {
+    stop();
+    st.pattern = pattern; st.chords = chords.slice(); st.mode = mode; if (bpm) st.bpm = bpm; save();
+  }
+  return { render, stop, setup, _st: st, _build: build };
 })();

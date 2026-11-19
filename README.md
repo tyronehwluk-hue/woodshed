@@ -2,6 +2,7 @@
 
 A guitar practice site that listens as you play.
 
+- **Path:** six units, one new chord each (Em, Am, A, Dm, then F). Lessons tick off automatically from your drills and picking sessions, and finishing a unit unlocks the next chord across the site.
 - **Chord changes:** pick two chords, strum, and the mic counts each clean change automatically.
 - **Chords:** diagrams and tips for the chords you know and the ones to learn next.
 - **Fingerpicking:** three patterns shown as tab over your chords. The mic checks each string you pick. Follow mode waits for you; Tempo mode plays a click and speeds up 5 bpm whenever you get 85% of a loop right.

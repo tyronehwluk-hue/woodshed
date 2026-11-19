@@ -22,14 +22,14 @@
   }
 
   // ---------- routing ----------
-  const ROUTES = ["home", "changes", "picking", "songs", "chords", "progress"];
+  const ROUTES = ["home", "path", "changes", "picking", "songs", "chords", "progress"];
   function route() {
     const r = ROUTES.includes(location.hash.slice(1)) ? location.hash.slice(1) : "home";
     ROUTES.forEach((x) => ($("view-" + x).hidden = x !== r));
     document.querySelectorAll(".nav a").forEach((a) => { if (a.dataset.route === r) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
     if (r !== "changes" && drill.phase !== "idle") finish(false);
     if (r !== "picking") Picking.stop();
-    ({ home: renderHome, changes: renderDrill, picking: Picking.render, songs: renderSongs, chords: renderChords, progress: renderProgress })[r]();
+    ({ home: renderHome, path: Path.render, changes: renderDrill, picking: Picking.render, songs: renderSongs, chords: renderChords, progress: renderProgress })[r]();
     window.scrollTo(0, 0);
   }
   window.addEventListener("hashchange", route);
@@ -54,23 +54,16 @@
     $("homeWeek").textContent = all.filter((d) => d.at > weekAgo).reduce((s, d) => s + d.n, 0);
     $("homePace").textContent = all.length ? Math.max(...all.map(pace)) : 0;
 
-    const bestOf = (a, b) => Math.max(0, ...all.filter((d) => pairName(d.a, d.b) === pairName(a, b)).map(pace));
-    const knownPairs = [["G", "C"], ["C", "D"], ["G", "D"], ["E", "D"], ["G", "E"], ["C", "E"]];
-    knownPairs.sort((x, y) => bestOf(...x) - bestOf(...y));
-    const newPairs = [["E", "Em"], ["C", "Am"], ["D", "A"], ["D", "Dm"]];
-    const nextNew = newPairs.find((p) => bestOf(...p) < 20) || newPairs[0];
-    const items = [
-      { t: `${knownPairs[0][0]} to ${knownPairs[0][1]}`, s: "Chord changes · 60 sec · your slowest pair", pair: knownPairs[0] },
-      { t: `${knownPairs[1][0]} to ${knownPairs[1][1]}`, s: "Chord changes · 60 sec", pair: knownPairs[1] },
-      { t: `${nextNew[0]} to ${nextNew[1]}`, s: `New chord · 60 sec · learn ${nextNew[1]}`, pair: nextNew },
-    ];
-    $("setlist").innerHTML = "";
-    items.forEach((it) => {
-      const a = document.createElement("a");
-      a.className = "row"; a.href = "#changes";
-      a.innerHTML = `<span class="row-icon" style="${coverStyle(it.t)}">${esc(it.pair[0])}·${esc(it.pair[1])}</span><span class="row-main"><span class="row-title">${esc(it.t)}</span><span class="row-sub">${esc(it.s)}</span></span><span class="row-go">${ICON_PLAY}</span>`;
-      a.addEventListener("click", () => { drill.a = it.pair[0]; drill.b = it.pair[1]; drill.secs = 60; savePrefs(); });
-      $("setlist").appendChild(a);
+    Path.sync();
+    const next = Path.nextLessons(3);
+    $("setlist").innerHTML = next.length ? "" : `<p class="empty">You've finished every unit so far. The F chord is coming soon.</p>`;
+    next.forEach(({ l, u }) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "row";
+      const label = l.type === "changes" ? `${esc(l.a)}·${esc(l.b)}` : "pick";
+      b.innerHTML = `<span class="row-icon" style="${coverStyle(Path.title(l))}">${label}</span><span class="row-main"><span class="row-title">${esc(Path.title(l))}</span><span class="row-sub">${esc(u.title)} · ${esc(Path.goalText(l))} · ${esc(Path.bestText(l))}</span></span><span class="row-go">${ICON_PLAY}</span>`;
+      b.addEventListener("click", () => Path.start(l));
+      $("setlist").appendChild(b);
     });
 
     const ready = SONGS.filter((s) => songStatus(s).ready).slice(0, 8);
@@ -80,6 +73,7 @@
   // ---------- songs ----------
   let songFilter = "all";
   function renderSongs() {
+    Path.sync();
     const filters = [["all", "All"], ["ready", "Play now"], ["near", "One chord away"]];
     $("songFilter").innerHTML = "";
     filters.forEach(([k, label]) => {
@@ -105,11 +99,13 @@
 
   // ---------- chord library ----------
   function renderChords() {
+    Path.sync();
     $("chordGrid").innerHTML = "";
     NAMES.forEach((n) => {
       const c = CHORDS[n], d = document.createElement("div");
       d.className = "libcard";
-      d.innerHTML = `<div class="nm">${n}</div><span class="st ${c.known ? "" : "new"}">${c.known ? "You know it" : "Learn next"}</span>${chordSVG(n)}<p></p>`;
+      const lab = c.known ? "You know it" : Path.learning() === n ? "Learning now" : "Later on your path";
+      d.innerHTML = `<div class="nm">${n}</div><span class="st ${c.known ? "" : "new"}">${lab}</span>${chordSVG(n)}<p></p>`;
       d.querySelector("p").textContent = c.tip;
       $("chordGrid").appendChild(d);
     });
@@ -186,6 +182,7 @@
   }
 
   function renderDrill() {
+    Path.banner($("lessonChanges"), "changes", { a: drill.a, b: drill.b });
     ["a", "b"].forEach((s) => {
       const el = $(s === "a" ? "cardA" : "cardB");
       el.innerHTML = `<div class="nm">${drill[s]}</div>${chordSVG(drill[s])}`;
@@ -266,6 +263,7 @@
       heard(prev === null || drill.count > prev
         ? `New best: ${drill.count} clean changes (${perMin} a minute).`
         : `${drill.count} clean changes (${perMin} a minute). Your best is ${prev}.`, drill.count > (prev || 0) ? "ok" : "");
+      Path.check();
     } else {
       drill.count = 0; heard("Stopped. Press Start when you're ready.");
     }
@@ -274,7 +272,8 @@
 
   $("start").addEventListener("click", () => (drill.phase === "idle" ? start() : finish(false)));
 
-  // test hook
+  window.App = { setDrill(a, b, secs) { drill.a = a; drill.b = b; drill.secs = secs; savePrefs(); } };
   window.__fw = { drill, onStrum };
+  Path.sync();
   route();
 })();

@@ -224,3 +224,58 @@ a.soon-card:hover { transform: translateY(-2px); }
   .tab-n { width: 19px; height: 19px; font-size: 11px; }
   .tab-n.now { transform: scale(1.12); }
 }
+
+/* Rows as buttons */
+button.row { width: 100%; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+
+/* Learning path */
+.path-summary { display: flex; flex-direction: column; gap: 14px; background: var(--panel-2); border-radius: var(--r-lg); padding: 18px; max-width: 760px; }
+.path-progress { display: flex; flex-direction: column; gap: 8px; font-weight: 700; }
+.bar { height: 8px; border-radius: 4px; background: var(--panel-3); overflow: hidden; }
+.bar > div { height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width .4s; }
+.path-known { display: flex; flex-direction: column; gap: 8px; }
+.known-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.path-summary .more { align-self: flex-start; }
+.units { display: flex; flex-direction: column; gap: 14px; max-width: 760px; position: relative; }
+.unit { background: var(--panel-2); border-radius: var(--r-lg); padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.unit.locked, .unit.soon { opacity: .55; }
+.unit-head { display: flex; gap: 14px; align-items: flex-start; }
+.unit-badge { width: 58px; height: 58px; flex: none; border-radius: 18px; display: grid; place-items: center; font-weight: 800; font-size: 22px; background: var(--panel-3); color: var(--text); }
+.unit.open .unit-badge { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--accent-ink); }
+.unit.done .unit-badge { background: var(--ok); color: #0b2a1a; }
+.unit-text { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.unit-text p { margin: 0; color: var(--sub); font-size: 14px; }
+.unit-n { font-size: 12px; font-weight: 700; color: var(--sub); }
+.unit.open .unit-n { color: var(--accent); }
+.unit-diagram { width: 72px; flex: none; color: var(--text); }
+.unit-diagram svg { width: 100%; height: auto; }
+.lessons { display: flex; flex-direction: column; gap: 2px; }
+.lesson { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: var(--r-sm); border: 0; background: none; font: inherit; color: inherit; text-align: left; width: 100%; cursor: pointer; transition: background .15s; }
+button.lesson:hover { background: var(--panel-3); }
+.lesson.locked { cursor: default; }
+.lesson-icon { width: 34px; height: 34px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--panel-3); color: var(--text); }
+.lesson-icon svg { width: 16px; height: 16px; }
+.lesson.done .lesson-icon { background: var(--ok); color: #0b2a1a; }
+button.lesson:not(.done):hover .lesson-icon { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--accent-ink); }
+.lesson-main { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.lesson-t { font-weight: 600; }
+.lesson.done .lesson-t { color: var(--sub); }
+.lesson-s { color: var(--sub); font-size: 13px; }
+.lesson-kind { font-size: 11.5px; font-weight: 700; color: var(--sub); padding: 3px 9px; border-radius: 999px; background: var(--panel-3); flex: none; }
+.unit-lock { margin: 0; color: var(--sub); font-size: 13px; font-weight: 600; }
+
+/* Lesson banner on practice pages */
+.lesson-banner { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--r-md); background: linear-gradient(135deg, rgba(255,138,76,.16), rgba(255,95,126,.12)); max-width: 760px; }
+.lb-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
+.lb-dot.ok { background: var(--ok); }
+.lb-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.lb-t { font-weight: 700; }
+.lb-s { color: var(--sub); font-size: 13px; }
+
+/* Toast */
+.toast { position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translate(-50%, -140%); max-width: min(92vw, 460px); z-index: 50; padding: 12px 18px; border-radius: 999px; background: var(--text); color: var(--bg); font-weight: 700; box-shadow: 0 12px 30px rgba(0,0,0,.4); transition: transform .3s; text-align: center; }
+.toast.show { transform: translate(-50%, 0); }
+@media (max-width: 760px) {
+  .unit-diagram { display: none; }
+  .lesson-kind { display: none; }
+}
